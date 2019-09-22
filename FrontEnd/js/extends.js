@@ -1,3 +1,0 @@
-paillier.createPub = function () {
-
-}
