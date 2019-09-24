@@ -13,13 +13,12 @@ import numpy as np
 import pickle
 
 class BulletinBoard(object):
-    def __init__(self, size, provider_uri, device_id):
+    def __init__(self, size, provider_uri, ctx):
         self.votes_enc = np.zeros(size, dtype=np.uint8)
         self.provider_uri = provider_uri
         self.size = size
         
-        devices = nufhe.find_devices(api="OpenCL")
-        self.ctx = nufhe.Context(device_id=devices[device_id])
+        self.ctx = ctx
 
         self.phe_pk, self.fhe_pk = self._get_public_keys()
         self.vm = self.ctx.make_virtual_machine(self.fhe_pk)

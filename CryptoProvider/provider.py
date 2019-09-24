@@ -10,8 +10,8 @@ from phe import paillier
 from utils import EncUInt8
 
 class CryptoProvider(object):
-    def __init__(self, device_id):
-        self.session = self._create_session(device_id)
+    def __init__(self, ctx):
+        self.session = self._create_session(ctx)
 
     def _generate_fhe_keys(self, ctx):
         secret_key, cloud_key = ctx.make_key_pair()
@@ -21,10 +21,7 @@ class CryptoProvider(object):
 
         return secret_key, cloud_key
 
-    def _create_session(self, device_id):
-        devices = nufhe.find_devices(api="OpenCL")
-        ctx = nufhe.Context(device_id=devices[device_id])
-
+    def _create_session(self, ctx):
         fhe_sk, fhe_pk = self._generate_fhe_keys(ctx)
         phe_sk, phe_pk = self._generate_phe_keys()
 
