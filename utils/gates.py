@@ -12,7 +12,7 @@ def full_adder(num1, num2, vm):
     u2 = vm.gate_nand(num1, u1)
     u3 = vm.gate_nand(num2, u1)
     u4 = vm.gate_nand(u2, u3)
-    print ("u4: ", ctx.decrypt(secret_key, u4))
+    # print ("u4: ", ctx.decrypt(secret_key, u4))
 
     ## zero carry-bit
     s0 = u4
@@ -28,12 +28,12 @@ def full_adder(num1, num2, vm):
     # print (s0[0].shape)
     
     # c_in_dec = ctx.decrypt(secret_key, c_in)
-    res1 = ctx.decrypt(secret_key, c0_out)
-    res2 = ctx.decrypt(secret_key, s0)
-    print ("s0: ", ctx.decrypt(secret_key, s0))
-    print ("c0: ", ctx.decrypt(secret_key, c0_out))
-    print ("s1: ", ctx.decrypt(secret_key, s1))
-    print ("c1: ", ctx.decrypt(secret_key, c1_out))
+    # res1 = ctx.decrypt(secret_key, c0_out)
+    # res2 = ctx.decrypt(secret_key, s0)
+    # print ("s0: ", ctx.decrypt(secret_key, s0))
+    # print ("c0: ", ctx.decrypt(secret_key, c0_out))
+    # print ("s1: ", ctx.decrypt(secret_key, s1))
+    # print ("c1: ", ctx.decrypt(secret_key, c1_out))
 
     c_in = c0_out[0:1]
     for i in range(1, 8):
@@ -124,6 +124,12 @@ def swap_if_le(A, B, vm):
 
     C = vm.gate_mux(le, B, A)
     D = vm.gate_mux(le, A, B)
+
+    return C, D, le
+
+def swap_if(A, B, cond, vm):
+    C = vm.gate_mux(cond, B, A)
+    D = vm.gate_mux(cond, A, B)
 
     return C, D
 

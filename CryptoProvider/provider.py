@@ -1,5 +1,8 @@
 ## web
-from flask import Flask, request
+from flask import Flask, make_response, request
+import json
+import base64
+import pickle
 
 ## homomorphic encryption
 import nufhe
@@ -12,6 +15,9 @@ class CryptoProvider(object):
 
     def _generate_fhe_keys(self, ctx):
         secret_key, cloud_key = ctx.make_key_pair()
+
+        with open('fhe_keys.pickle', 'wb') as f:
+            pickle.dump([secret_key.dumps(), cloud_key.dumps()], f)
 
         return secret_key, cloud_key
 
@@ -29,7 +35,7 @@ class CryptoProvider(object):
                 'phe_sk' : phe_sk
             },
             'public_keys' : {
-                'phe_pk' : phe_sk,
+                'phe_pk' : phe_pk,
                 'fhe_pk' : fhe_pk
             }
         }
@@ -39,43 +45,81 @@ class CryptoProvider(object):
     def _generate_phe_keys(self):
         public_key, private_key = paillier.generate_paillier_keypair()
 
-        return public_key, private_key
+        with open('phe_keys.pickle', 'wb') as f:
+            pickle.dump([public_key, private_key], f)
 
-    def _reencrypt_phe_to_fhe():
-        pass
+        return private_key, public_key
+
+    def _reencrypt_phe_to_fhe(self, values_cipher):
+        phe_sk = self.session['private_keys']['phe_sk']
+        phe_pk = self.session['public_keys']['phe_pk']
+
+        values_enc = [paillier.EncryptedNumber(phe_pk, int(x), 0) for x in values_cipher]
+        values = [phe_sk.decrypt(x) for x in values_enc]
+
+        fhe_sk = self.session['private_keys']['fhe_sk']
+        fhe_pk = self.session['public_keys']['fhe_pk']
+        ctx = self.session['ctx']
+        vm = ctx.make_virtual_machine(fhe_pk)
+        
+        fhe_values = [EncUInt8.from_uint8(vm, fhe_sk, ctx, x) for x in values]
+
+        return fhe_values
 
     def make_web_controller(self):
         crypto_provider_ctrl = Flask("crypto-provider")
 
+        # @crypto_provider_ctrl.after_request
+        # def add_header(response):
+        #     response.headers['Access-Control-Allow-Origin'] = '*'
+        #     response.headers['content-type'] = 'application/json'
+        #     return response
+
+        def set_header(resp):
+            resp.headers['Access-Control-Allow-Origin'] = '*'
+            resp.headers['content-type'] = 'application/json'
+
+            return resp
+
         @crypto_provider_ctrl.route('/phe_public_key', methods=['GET'])
         def phe_public_key():
             public_key = self.session['public_keys']['phe_pk']
-            return str(public_key.n)
+            resp = make_response(json.dumps({ 'phe_pk' : str(public_key.n) }))
+
+            return set_header(resp)
 
         @crypto_provider_ctrl.route('/fhe_public_key', methods=['GET'])
         def fhe_public_key():
             public_key = self.session['public_keys']['fhe_pk']
-            return public_key.dumps()
+            data = base64.b64encode(public_key.dumps()).decode('utf-8')
+            resp = make_response(json.dumps({ 'fhe_pk' : data }))
+
+            return set_header(resp)
+
+        @crypto_provider_ctrl.route('/decrypt', methods=['POST'])
+        def decrypt():
+            fhe_sk = self.session['private_keys']['fhe_sk']
+            fhe_pk = self.session['public_keys']['fhe_pk']
+
+            ctx = self.session['ctx']
+            vm = ctx.make_virtual_machine(fhe_pk)
+
+            values_cipher = request.json
+            values_fhe = [base64.b64decode(x.encode('utf-8')) for x in values_cipher]
+            values_fhe = [EncUInt8.from_ciphertext(vm, ctx, x) for x in values_fhe]
+            values = [int(x.decrypt(fhe_sk, ctx)[0]) for x in values_fhe]
+
+            resp = make_response(json.dumps(values))
+            return set_header(resp)
 
         @crypto_provider_ctrl.route('/reencrypt', methods=['POST'])
         def reencrypt():
-            request_json = request.json
-            x = request_json['value']
+            values_cipher = request.json            
+            fhe_values = self._reencrypt_phe_to_fhe(values_cipher)
+            data = [base64.b64encode(x.dumps()).decode('utf-8') for x in fhe_values]
 
-            phe_sk = self.session['private_keys']['phe_sk']
-            phe_pk = self.session['public_keys']['phe_pk']
-
-            enc_value = paillier.EncryptedNumber(phe_pk, int(x), 0)
-            value = phe_sk.decrypt(enc_value)
-
-            fhe_sk = self.session['private_keys']['fhe_sk']
-            fhe_pk = self.session['public_keys']['fhe_pk']
-            ctx = self.session['ctx']
-            vm = ctx.make_virtual_machine(fhe_pk)
-            
-            fhe_value = EncUInt8.from_uint8(vm, fhe_sk, ctx, value)
-
-            return fhe_value.dumps()
+            resp = make_response(json.dumps(data))
+            return set_header(resp)
 
         return crypto_provider_ctrl
 
