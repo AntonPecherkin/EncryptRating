@@ -73,10 +73,17 @@ class CryptoProvider(object):
         #     return response
 
         def set_header(resp):
-            resp.headers['Access-Control-Allow-Origin'] = '*'
+            # resp.headers['Access-Control-Allow-Origin'] = '*'
             resp.headers['content-type'] = 'application/json'
 
             return resp
+
+        @crypto_provider_ctrl.after_request
+        def after_request(response):
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+            response.headers.add('Access-Control-Allow-Methods', 'GET,POST')
+            return response
 
         @crypto_provider_ctrl.route('/phe_public_key', methods=['GET'])
         def phe_public_key():

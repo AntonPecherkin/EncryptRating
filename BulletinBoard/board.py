@@ -100,17 +100,39 @@ class BulletinBoard(object):
 
     def make_web_controller(self):
         bulletin_board_ctrl = Flask("bulletin-board")
+        bulletin_board_ctrl.config['DEBUG'] = True
 
         def set_header(resp):
-            resp.headers['Access-Control-Allow-Origin'] = '*'
+            # resp.headers['Access-Control-Allow-Origin'] = '*'
             resp.headers['content-type'] = 'application/json'
 
             return resp
 
+        @bulletin_board_ctrl.after_request
+        def after_request(response):
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            response.headers.add('Access-Control-Allow-Headers', '*')
+            response.headers.add('Access-Control-Allow-Methods', '*')
+            return response
+
         @bulletin_board_ctrl.route('/phe_votes', methods=['POST'])
         def get_phe_votes():
             data = request.json
+            keys = data.keys()
+            data = data.values()
+
+            print (keys)
+
+            with open('phe_keys.pickle', 'rb') as f:
+                public_key, private_key = pickle.load(f)
+                # print (public_key.n)
+
             votes = [paillier.EncryptedNumber(self.phe_pk, int(x), 0) for x in data]
+            
+
+            votes_dec = [private_key.decrypt(x) for x in votes]
+            print ("PHE VOTES: ", votes_dec)
+
             votes = np.array(votes)
             self.votes_enc = votes + self.votes_enc
 
