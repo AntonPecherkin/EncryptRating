@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jsbn/jsbn.js"></script>
+    <script type="text/javascript" src="js/jsbn/jsbn2.js"></script>
+    <script type="text/javascript" src="js/jsbn/prng4.js"></script>
+    <script type="text/javascript" src="js/jsbn/rng.js"></script>
+    <script type="text/javascript" src="js/paillier.js"></script>
+    <script type="text/javascript" src="js/config.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Barlow&display=swap" rel="stylesheet">
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+    <link type="text/css" rel="stylesheet" href="css/main.css"/>
+</head>
+<body>
+<div class="container">
+    <div class="preloader-wrapper big active" id="waiter">
+        <div class="spinner-layer spinner-blue-only" id="wait">
+            <div class="circle-clipper left">
+                <div class="circle"></div>
+            </div><div class="gap-patch">
+            <div class="circle"></div>
+        </div><div class="circle-clipper right">
+            <div class="circle"></div>
+        </div>
+        </div>
+    </div>
+    <div class="choice-container">
+        <ul class="coll" id="friend-list">
+        </ul>
+    </div>
+</div>
+
+<script>
+    window.onload = function () {
+        getResults();
+    }
+</script>
+<!--JavaScript at end of body for optimized loading-->
+<script type="text/javascript" src="js/materialize.min.js"></script>
+</body>
+</html>
