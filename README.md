@@ -1,6 +1,6 @@
 # Encrypt Rating
 
-[![N|Solid](images/Team.png)](http://startblock.online)
+[![N|Solid](images/IMAGE 2019-09-27 13:34:51.jpg)](http://startblock.online)
 
 # Structure
 
