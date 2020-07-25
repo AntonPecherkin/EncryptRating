@@ -184,6 +184,14 @@ Launch Android application - button “cypher info” sending information to the
 
 More information: [A hidden pixel](#a-hidden-pixel)
 
+# Tech Instruments & APIs
+
+1. Google Form's events listener - Google Apps script
+
+2. Timestamping of Google Form's responses - Hedera Hashgraph Consensus Service
+
+3. Key management & Transaction signing - Composer for Hedera Hashgraph
+
 # Finally
 
 **CryptoBox** is a complete product for safe storage of your documents in one place and convenient use.
